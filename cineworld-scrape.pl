@@ -2,7 +2,7 @@
 ###############################################################################
 #cineworld-scrape gets cinema listings and converts them from html to xml
 #
-#Copyright (C) 2006 Thomas Stewart <thomas@stewarts.org.uk
+#Copyright (C) 2007 Thomas Stewart <thomas@stewarts.org.uk
 #
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
@@ -27,24 +27,27 @@ use HTML::TreeBuilder;
 use XML::DOM;
 use XML::XPath;
 
-my $site_id = "1";
-
 #download raw html data
-my $url="http://www.cineworld.co.uk/jahia/Jahia/cache/bypass/pid/21?" .
-        "siteId=" .  $site_id ; #. "&otherDays=2006-10-13";
-#$url="http://d8s7c1j/~thomas/cw.html";
+my $region = "3";
+my $cinema = "1";
+my $date   = "20070928";
+
+#http://jonas.liljegren.org/perl/libxml/XML/DOM.html
+
+my $url="http://www.cineworld.co.uk/reservation/ChoixResa.jgi?REGION=$region&CINEMA=$cinema&formulaireDate=$date";
+#$url="http://jade/cw.html";
 my $data=get($url);
 $data =~ s/\n//g;
 $data =~ s/\r//g;
 
 #create new xml doc
 my $xml = XML::DOM::Document->new;
-my $xml_pi = $xml->createXMLDecl ('1.0');
-my $xml_dt = $xml->createDocumentType('cinemalistings', 'cw.dtd');
+my $xml_d = $xml->createXMLDecl ('1.0');
+my $xml_t = $xml->createDocumentType('cinemalistings', 'cw.dtd');
+my $xml_i = $xml->createProcessingInstruction("xml-stylesheet", "type=\"text/xsl\" href=\"cw.xsl\"");
 my $cinemalistings = $xml->createElement('cinemalistings');
 $cinemalistings->setAttribute('chain', 'cineworld');
 $cinemalistings->setAttribute('name', 'Stevenage');
-$cinemalistings->setAttribute('siteid', $site_id);
 $cinemalistings->setAttribute('originalurl', $url);
 
 #parse shit html into a tree and convert to xml
@@ -53,69 +56,55 @@ $tree->parse($data);
 $tree->eof();
 $data=$tree->as_XML;
 $tree->delete;
+#print $data; exit;
 
-#search the xml, get a bunch for films
+#get the main table of data
 my $xpath = XML::XPath->new(xml => $data);
-my $filmset = $xpath->find('//div[@class="contentFullContainer"]');
+my $filmset = $xpath->find('//table[4]//table//table//table//table');
 
-foreach my $film ($filmset->get_nodelist) {
-        $xpath = XML::XPath->new(
-                        xml => XML::XPath::XMLParser::as_string($film));
-        
+#split this table into its rows, the first table in the main payload
+$xpath = XML::XPath->new( xml => 
+        XML::XPath::XMLParser::as_string($filmset->shift()) );
+my $trs = $xpath->find('table/tr');
+
+#loop over each row
+my $title = "";
+for(my $tr=0; $tr < $trs->size; $tr++) {
+        #the film titles are all in bold tags
+        $xpath = XML::XPath->new( xml => 
+                XML::XPath::XMLParser::as_string( $trs->get_node($tr) ) );
+        my $name = $xpath->find('//b');
+        if($name->size eq 1) {
+                $title = XML::XPath::XMLParser::as_string($name->shift());
+                $title =~ s/<b>(.+)<\/b>/$1/;
+                $title =~ s/&amp;/&/;
+                $title =~ s/(\w+)/\u\L$1/g;
+        }
+
+        #see if this row conains times
+        $xpath = XML::XPath->new( xml => 
+                XML::XPath::XMLParser::as_string( $trs->get_node($tr) ) );
+        my $times = $xpath->find('//a[@class="basenoirsoul"]/text()');
+        if($times->size < 1) { next };
+
+        #make a new film node and attach the title to it
         my $film = $xml->createElement('film');
-
-        my $title = $xpath->find('//tr[1]/td/strong/a[1]/text()');
-        $title = XML::XPath::XMLParser::as_string($title->get_node(0));
-        $title =~ s/&amp;/&/;
         $film->setAttribute('title', $title);
 
-        my $cert = $xpath->find('//tr[1]/td/strong/a[2]/text()');
-        $cert = XML::XPath::XMLParser::as_string($cert->get_node(0));
-        $cert =~ s/\(//;
-        $cert =~ s/\)//;
-        $film->setAttribute('cert', $cert);
-        
-        my $guidance = $xpath->find('//tr[1]/td/div/text()');
-        if($guidance->size() == 1) {
-                $guidance = XML::XPath::XMLParser::as_string(
-                                $guidance->get_node(0));
-                $film->setAttribute('guidance', $guidance);
+        #loop over each time
+        my $showings = $xml->createElement('showings');
+        foreach my $time ($times->get_nodelist) {
+                my $time = XML::XPath::XMLParser::as_string($time);
+                $time =~ s/ //g;
+
+                my $showing = $xml->createElement('showing');
+                $showing->setAttribute('time', $time);
+                $showings->appendChild($showing);
         }
-
-        my $showings_node = $xml->createElement('showings');
-        my $timesblob = $xpath->find('//tr[2]//tr//td');
-        foreach my $timeblob ($timesblob->get_nodelist) {
-                my $timesblobxpath = XML::XPath->new(
-                        xml => XML::XPath::XMLParser::as_string($timeblob));
-                my $times = $timesblobxpath->find('/td/text()');
-                foreach my $time ($times->get_nodelist) {
-                        my $showing_node = $xml->createElement('showing');
-
-                        $time = XML::XPath::XMLParser::as_string($time);
-                        $time =~ s/ //g;
-
-                        $showing_node->setAttribute('time', $time);
-
-                        $showing_node->setAttribute('audiodescribed', "false");
-                        $showing_node->setAttribute('subtitled', "false");
-
-                        my $infos = $timesblobxpath->find('/td/span/text()');
-                        foreach my $info ($infos->get_nodelist) {
-                                if (XML::XPath::XMLParser::as_string($info) eq "(AD)") {
-                                        $showing_node->setAttribute('audiodescribed', "true");
-                                }
-
-                                if (XML::XPath::XMLParser::as_string($info) eq "(S)") {
-                                        $showing_node->setAttribute('subtitled', "true");
-                                }
-                        }
-
-                        $showings_node->appendChild($showing_node);
-                }
-        }
-        $film->appendChild($showings_node);
-
+        $film->appendChild($showings);
         $cinemalistings->appendChild($film);
-}
 
-print $xml_pi->toString. $xml_dt->toString . $cinemalistings->toString . "\n";
+        $title="";
+}
+print $xml_d->toString . $xml_t->toString . $xml_i->toString . $cinemalistings->toString . "\n";
+
