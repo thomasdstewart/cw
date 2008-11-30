@@ -156,8 +156,9 @@ class CineworldScrape:
                                 showing.setAttribute ("url", url)
 
                                 showingtime = self.xpath ('text()', r)
+                                showingtime = day + " " + showingtime
                                 showingtime = datetime.datetime (*( \
-                                        time.strptime (day + showingtime , \
+                                        time.strptime (showingtime, \
                                         "%Y-%m-%d %H:%M")[0:6]))
                                 showingtime = showingtime.isoformat(' ')
 
@@ -203,6 +204,7 @@ if __name__ == "__main__":
         #cinemalistings.appendChild (film)
 
         #print doc.toprettyxml (indent="  ")
+        #sys.exit ()
         #print c.scrape ().toprettyxml (indent="  ")
 
         doc = c.scrape ()
