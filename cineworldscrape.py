@@ -14,13 +14,12 @@
 #You should have received a copy of the GNU General Public License
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-from time import strftime
-import time
 import datetime
 import libxml2
 import libxslt
 import sys
 import tidy
+import time
 import urllib
 import xml.dom.ext.reader.Sax2
 import xml.xpath
@@ -160,18 +159,18 @@ class CineworldScrape:
                                 showingtime = datetime.datetime (*( \
                                         time.strptime (day + showingtime , \
                                         "%Y-%m-%d %H:%M")[0:6]))
-                                showingtime = showingtime.isoformat
+                                showingtime = showingtime.isoformat(' ')
 
                                 showing.setAttribute ("time", showingtime)
-                                #showings.appendChild (showing)
+                                showings.appendChild (showing)
 
                 return film
                
         def scrape (self):
-                urls = self.filmurls ()
 
                 doc = xml.dom.minidom.Document ()
-                #my $xml_t = $xml->createDocumentType ('cinemalistings', 'cw.dtd');
+                #doctype = xml.dom.minidom.DocumentType('cw.dtd')
+                #doc.appendChild (doctype)
                 #my $xml_i = $xml->createProcessingInstruction ("xml-stylesheet", 'type="text/xsl" href="cw.xsl"');
 
                 cinemalistings = doc.createElement ("cinemalistings")
@@ -180,6 +179,7 @@ class CineworldScrape:
                 cinemalistings.setAttribute ("url", self.listingsurl)
                 doc.appendChild (cinemalistings)
 
+                urls = self.filmurls ()
                 for url in urls:
                         filmdoc = self.downloadtidyparse (url)
                         film = self.scrapefilm (filmdoc)
