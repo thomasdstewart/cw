@@ -5,11 +5,17 @@
 
 <!ELEMENT film (showings)>
 <!ATTLIST film cert CDATA #REQUIRED>
+<!ATTLIST film certdesc CDATA #REQUIRED>
 <!ATTLIST film certimg CDATA #REQUIRED>
 <!ATTLIST film director CDATA #REQUIRED>
+<!ATTLIST film distributor CDATA #REQUIRED>
 <!ATTLIST film img CDATA #REQUIRED>
+<!ATTLIST film longsynopsis CDATA #REQUIRED>
+<!ATTLIST film release CDATA #REQUIRED>
 <!ATTLIST film runtime CDATA #REQUIRED>
-<!ATTLIST film showingfrom CDATA #REQUIRED>
+<!ATTLIST film screenplay CDATA #REQUIRED>
+<!ATTLIST film seebecause CDATA #REQUIRED>
+<!ATTLIST film seeifyouliked CDATA #REQUIRED>
 <!ATTLIST film staring CDATA #REQUIRED>
 <!ATTLIST film synopsis CDATA #REQUIRED>
 <!ATTLIST film title CDATA #REQUIRED>
@@ -21,3 +27,4 @@
 <!ELEMENT showing EMPTY>
 <!ATTLIST showing time CDATA #REQUIRED>
 <!ATTLIST showing url CDATA #REQUIRED>
+
