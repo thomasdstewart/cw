@@ -2,7 +2,7 @@
 ###############################################################################
 #cineworld-scrape gets cinema listings and converts them from html to xml
 #
-#Copyright (C) 2007 Thomas Stewart <thomas@stewarts.org.uk
+#Copyright (C) 2007,2008 Thomas Stewart <thomas@stewarts.org.uk
 #
 #This program is free software; you can redistribute it and/or
 #modify it under the terms of the GNU General Public License
@@ -32,6 +32,7 @@ use XML::XSLT;
 my $region = "3";
 my $cinema = "1";
 my $date   = `date +%Y%m%d`;
+chomp($date);
 
 #http://jonas.liljegren.org/perl/libxml/XML/DOM.html
 
@@ -64,8 +65,8 @@ $cinemalistings->setAttribute('originalurl', $url);
 
 #get the main table of data
 my $xpath = XML::XPath->new(xml => $data);
-my $films = $xpath->find('/html/body/table[3]/tr/td/table/tr/td/table/tr[2]/td[2]/table/tr/td[2]/table/tr');
-print STDERR $films->size . "\n"; for(my $t=0; $t < $films->size; $t++) { print XML::XPath::XMLParser::as_string($films->get_node($t)); } exit;
+my $films = $xpath->find('//td[@class="a3Content"]/table');
+#print STDERR $films->size . "\n"; for(my $t=0; $t < $films->size; $t++) { print XML::XPath::XMLParser::as_string($films->get_node($t)); print "\n\n" } exit;
 #print XML::XPath::XMLParser::as_string($films->get_node(0)); exit;
 
 #loop over each row
@@ -73,16 +74,19 @@ foreach my $film ($films->get_nodelist) {
         $xpath = XML::XPath->new( xml => 
                 XML::XPath::XMLParser::as_string($film) );
 
-        my $img = $xpath->find('//img/@src');
+        my $img = $xpath->find('//a/img/@src');
         if($img->size() eq 1) {
                 $img = XML::XPath::XMLParser::as_string($img->get_node(0));
                 $img =~ s/^ src="//;
                 $img =~ s/"$//;
+                if($img =~ m/^\/AfficheFilmDyn/) {
+                        $img = "http://www.cineworld.co.uk" . $img;
+                }
         } else {
                 $img = "";
         }
 
-        my $url = $xpath->find('//a[@class="a3SousTitre color03Txt"]/@href');
+        my $url = $xpath->find('//a[@class="a3SousTitre"]/@href');
         if($url->size() eq 1) {
                 $url = XML::XPath::XMLParser::as_string($url->get_node(0));
                 $url =~ s/^ href="//;
@@ -93,17 +97,17 @@ foreach my $film ($films->get_nodelist) {
                 $url = "";
         }
 
-        my $title = $xpath->find('//a[@class="a3SousTitre color03Txt"]/text()');
+        my $title = $xpath->find('//a[@class="a3SousTitre"]/text()');
         if($title->size() eq 1) {
                 $title = XML::XPath::XMLParser::as_string($title->get_node(0));
-                $title =~ s/<b>(.+)<\/b>/$1/;
+                $title =~ s/^ //;
                 $title =~ s/&amp;/&/g;
                 $title =~ s/(\w+)/\u\L$1/g;
         } else {
                 $title = "";
         }
 
-        my $cert = $xpath->find('//span[@class="Nb_Film color03Txt"]/text()');
+        my $cert = $xpath->find('//span[@class="Nb_Film "]/text()');
         if($cert->size() eq 1) {
                 $cert = XML::XPath::XMLParser::as_string($cert->get_node(0));
                 $cert =~ s/ //g;
@@ -111,17 +115,18 @@ foreach my $film ($films->get_nodelist) {
                 $cert = "";
         }
 
-        my $dir = $xpath->find('//span[3]/text()');
+        my $dir = $xpath->find('//td[@class="PaddingTop"]/span[3]/text()');
         if($dir->size() eq 1) {
                 $dir = XML::XPath::XMLParser::as_string($dir->get_node(0));
         } else {
                 $dir = "";
         }
 
-        my $staring = $xpath->find('//span[6]/text()');
+        my $staring = $xpath->find('//td[@class="PaddingTop"]/span[6]/text()');
         if($staring->size() eq 1) {
                 $staring = XML::XPath::XMLParser::as_string(
                                 $staring->get_node(0));
+                $staring =~ s/ +$//;
         } else {
                 $staring = "";
         }
