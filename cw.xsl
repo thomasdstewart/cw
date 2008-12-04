@@ -5,16 +5,9 @@
 <head>
 <title>
 <xsl:value-of select="cinemalistings/@chain"/>
-<!--
-18:45 to 21:45
--->
 (<xsl:value-of select="cinemalistings/@location"/>)
 </title>
 <script language="JavaScript">
-function removesaved() {
-        /* document.cookie.split("; ") */
-}
-
 function hideid(id) {
         var showings = document.evaluate( "//tr[@id='" + id + "']" ,
                 document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
@@ -23,8 +16,7 @@ function hideid(id) {
                 showing.parentNode.removeChild(showing);
 
         } 
-        /* document.cookie=id + "=" */
-        }
+}
 
 function showid(id) {
         var showings = document.evaluate( "//tr[@id!='" + id + "']" ,
@@ -34,24 +26,22 @@ function showid(id) {
                 showing.parentNode.removeChild(showing);
 
         } 
-        document.cookie=id + "="
-        }
+}
 </script>
 </head>
-<body onLoad="removesaved()">
+<body>
 <table>
         <xsl:for-each select="cinemalistings/film/showings/showing">
-        <xsl:sort select="@time"/>
-        <xsl:variable name="hour" select="substring-before(@time, ':')" />
-        <xsl:variable name="min" select="substring-after(@time, ':')" />
-<!--
-        <xsl:if test="($hour = 18 and $min &gt; 44) or ($hour &gt; 18)">
-        <xsl:if test="($hour = 22 and $min &lt; 46) or ($hour &lt; 22)">
--->
+        <xsl:sort select="substring(@time,1,4)"/>
+        <xsl:sort select="substring(@time,6,2)"/>
+        <xsl:sort select="substring(@time,9,2)"/>
+        <xsl:sort select="substring(@time,12,2)"/>
+        <xsl:sort select="substring(@time,15,2)"/>
+
         <tr id="{../../@title}">
                 <td colspan="2">
                         <br/>
-                        <xsl:value-of select="@time"/> 
+                        <xsl:value-of select="substring(@time,1,15)"/> 
                         <a href="{../../@url}">
                                 <xsl:value-of select="../../@title"/>
                         </a>
@@ -61,12 +51,20 @@ function showid(id) {
                 <td>
                         Runtime:
                         <b><xsl:value-of select="../../@runtime"/></b>
-                        Showing Since:
-                        <b><xsl:value-of select="../../@showingfrom"/></b>
+                        Release:
+                        <b><xsl:value-of select="../../@release"/></b>
                         Director:
                         <b><xsl:value-of select="../../@director"/></b>
+                        Distributor:
+                        <b><xsl:value-of select="../../@distributor"/></b>
                         Staring:
-                        <xsl:value-of select="../../@staring"/>
+                        <b><xsl:value-of select="../../@staring"/></b>
+                        Screen Play:
+                        <b><xsl:value-of select="../../@screenplay"/></b>
+                        See because:
+                        <b><xsl:value-of select="../../@seebecause"/></b>
+                        See if you liked:
+                        <b><xsl:value-of select="../../@seeifyouliked"/></b>
                         <br/>
                         <a href="javascript:hideid('{../../@title}');">Hide</a>
                         <a href="javascript:showid('{../../@title}');">Show</a>
@@ -75,10 +73,6 @@ function showid(id) {
                         <img src="{../../@img}"/>
                 </td>
         </tr>
-<!--
-        </xsl:if>
-        </xsl:if>
--->
         </xsl:for-each>
 </table>
 </body>
