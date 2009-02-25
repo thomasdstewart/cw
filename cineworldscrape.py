@@ -216,9 +216,3 @@ if __name__ == "__main__":
         result = style.applyStylesheet (doc, None)
         style.saveResultToFilename ("/home/thomas/www/cw/cw.html", result, 0)
 
-        styledoc = libxml2.parseFile ("/home/thomas/www/cw/cweve.xsl")
-        style = libxslt.parseStylesheetDoc (styledoc)
-        doc = libxml2.parseFile ("/home/thomas/www/cw/cw.xml")
-        result = style.applyStylesheet (doc, None)
-        style.saveResultToFilename ("/home/thomas/www/cw/cweve.html", result, 0)
-
