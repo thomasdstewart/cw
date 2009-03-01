@@ -143,7 +143,7 @@ class CineworldScrape:
                                 d = r.nodeValue
                                 d = d.encode ('ascii', 'replace')
                                 d = datetime.datetime (*(time.strptime \
-                                        (y + d, "%Y %a %d %b")[0:6]))
+                                        (y + " " + d, "%Y %a %d %b")[0:6]))
                                 day = str(d.year) + "-" + str(d.month) \
                                         + "-" + str(d.day)
 
