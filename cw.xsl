@@ -149,6 +149,7 @@ of
 <a href="javascript:resetseen();">reset</a>
 seen
 <br/>
+<br/>
 <table>
         <xsl:for-each select="cinemalistings/film/showings/showing">
         <xsl:sort select="substring(@time,1,4)"/>
@@ -199,7 +200,7 @@ seen
                         <a href="javascript:showtitle('{../../@title}');">only</a>
                         show this title.
                 </td>
-                <td>
+                <td style="vertical-align: top">
                         <img src="{../../@img}"/>
                 </td>
         </tr>
