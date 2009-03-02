@@ -203,6 +203,7 @@ seen
                         <img src="{../../@img}"/>
                 </td>
         </tr>
+        <tr><td><br/></td></tr>
         </xsl:for-each>
 </table>
 </body>
