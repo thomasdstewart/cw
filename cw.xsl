@@ -17,7 +17,8 @@ function getCookie(c_name) {
                         if (c_end == -1) {
                                 c_end = document.cookie.length;
                         }
-                        return unescape(document.cookie.substring(c_start, c_end));
+                        return unescape(document.cookie.substring(c_start,
+                                c_end));
                 } 
         }
         return "";
@@ -73,25 +74,29 @@ function hideshowings(showings) {
 }
 
 function hidetitle(title) {
-        var showings = document.evaluate( "//tr[@id='film']/td[@id='" + title + "']" ,
+        var showings = document.evaluate(
+                "//tr[@id='film']/td[@id='" + title + "']" ,
                 document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         hideshowings(showings) 
 }
 
 function showtitle(title) {
-        var showings = document.evaluate( "//tr[@id='film']/td[@id!='" + title + "']" ,
+        var showings = document.evaluate(
+                "//tr[@id='film']/td[@id!='" + title + "']" ,
                 document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         hideshowings(showings) 
 }
 
 function hidebefore(time) {
-        var showings = document.evaluate( "//tr[@id='film']/td[@id&lt;'" + time + "']" ,
+        var showings = document.evaluate(
+                "//tr[@id='film']/td[@id&lt;'" + time + "']" ,
                 document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         hideshowings(showings) 
 }
 
 function hideafter(time) {
-        var showings = document.evaluate( "//tr[@id='film']/td[@id&gt;'" + time + "']" ,
+        var showings = document.evaluate(
+                "//tr[@id='film']/td[@id&gt;'" + time + "']" ,
                 document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         hideshowings(showings) 
 }
@@ -135,11 +140,15 @@ function soon() {
 </script>
 </head>
 <body>
-
-<a href="javascript:eve();">show evening showings (18:45 to 22:45)</a><br/>
-<a href="javascript:soon();">show showings starting soon (now to +1 hour)</a><br/>
-<a href="javascript:hideseen();">hide seen</a><br/>
-<a href="javascript:resetseen();">reset seen</a><br/>
+show
+<a href="javascript:eve();">evening showings (18:45 to 22:45)</a>
+or
+<a href="javascript:soon();">showings starting soon (now to +1 hour)</a><br/>
+<a href="javascript:hideseen();">hide</a>
+of
+<a href="javascript:resetseen();">reset</a>
+seen
+<br/>
 <table>
         <xsl:for-each select="cinemalistings/film/showings/showing">
         <xsl:sort select="substring(@time,1,4)"/>
@@ -154,21 +163,29 @@ function soon() {
                 <td id="{../../@title}" />
                 <td id="{$stime}" />
                 <td>
-                        <xsl:value-of select="substring(@time,1,16)"/> 
+                        <b><xsl:value-of select="substring(@time,1,16)"/></b>
                         <a href="{../../@url}">
                                 <xsl:value-of select="../../@title"/>
                         </a>
-                        <br/>
+                        Summary:
+                        <b><xsl:value-of select="../../@summary"/></b>
                         Runtime:
                         <b><xsl:value-of select="../../@runtime"/></b>
                         Release:
                         <b><xsl:value-of select="../../@release"/></b>
                         Director:
                         <b><xsl:value-of select="../../@director"/></b>
+                        Distributor:
+                        <b><xsl:value-of select="../../@distributor"/></b>
                         Staring:
                         <b><xsl:value-of select="../../@staring"/></b>
+                        Screen Play:
+                        <b><xsl:value-of select="../../@screenplay"/></b>
+                        See because:
+                        <b><xsl:value-of select="../../@seebecause"/></b>
+                        See if you liked:
+                        <b><xsl:value-of select="../../@seeifyouliked"/></b>
                         <br/>
-
                         Hide showings
                         <a href="javascript:hidebefore('{$stime}');">before</a>
                         or
