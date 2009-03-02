@@ -20,9 +20,8 @@
 <!ATTLIST film summary CDATA #REQUIRED>
 <!ATTLIST film title CDATA #REQUIRED>
 <!ATTLIST film url CDATA #REQUIRED>
-<!ATTLIST film warning CDATA #REQUIRED>
 
-<!ELEMENT showings (showing+)>
+<!ELEMENT showings (showing*)>
 
 <!ELEMENT showing EMPTY>
 <!ATTLIST showing time CDATA #REQUIRED>
