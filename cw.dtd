@@ -10,14 +10,14 @@
 <!ATTLIST film director CDATA #REQUIRED>
 <!ATTLIST film distributor CDATA #REQUIRED>
 <!ATTLIST film img CDATA #REQUIRED>
-<!ATTLIST film longsynopsis CDATA #REQUIRED>
+<!ATTLIST film synopsis CDATA #REQUIRED>
 <!ATTLIST film release CDATA #REQUIRED>
 <!ATTLIST film runtime CDATA #REQUIRED>
 <!ATTLIST film screenplay CDATA #REQUIRED>
 <!ATTLIST film seebecause CDATA #REQUIRED>
 <!ATTLIST film seeifyouliked CDATA #REQUIRED>
 <!ATTLIST film staring CDATA #REQUIRED>
-<!ATTLIST film synopsis CDATA #REQUIRED>
+<!ATTLIST film summary CDATA #REQUIRED>
 <!ATTLIST film title CDATA #REQUIRED>
 <!ATTLIST film url CDATA #REQUIRED>
 <!ATTLIST film warning CDATA #REQUIRED>

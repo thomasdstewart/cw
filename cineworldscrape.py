@@ -110,27 +110,26 @@ class CineworldScrape:
 
                 flv = self.xpath ('//div[@id="flashcontent"]/text()', doc)
                 
-                synopsis = self.xpath ('//div[@class="synopsis"]/p[1]/text()',
-                        doc)
+                summary = self.xpath ('//div[@id="summary"]/p/text()', doc)
+                film.setAttribute ("summary", summary)
+
+                synopsis = self.xpath (
+                        '//div[@id="synopsis"]/p[2]/text()', doc)
                 film.setAttribute ("synopsis", synopsis)
 
-                longsynopsis = self.xpath (
-                        '//div[@class="synopsis"]/p[2]/text()', doc)
-                film.setAttribute ("longsynopsis", longsynopsis)
-
-                screenplay = self.xpath ('//div[@class="main"]/p[6]/text()',
+                screenplay = self.xpath ('//div[@id="synopsis"]/p[3]/text()',
                         doc)
                 film.setAttribute ("screenplay", screenplay)
                 
-                distributor = self.xpath ('//div[@class="main"]/p[7]/text()',
+                distributor = self.xpath ('//div[@id="synopsis"]/p[4]/text()',
                         doc)
                 film.setAttribute ("distributor", distributor)
 
-                seebecause = self.xpath ('//div[@class="main"]/p[8]/text()',
+                seebecause = self.xpath ('//div[@id="synopsis"]/p[5]/text()',
                         doc)
                 film.setAttribute ("seebecause", seebecause)
 
-                seeifyouliked = self.xpath ('//div[@class="main"]/p[9]/text()',
+                seeifyouliked = self.xpath ('//div[@id="synopsis"]/p[6]/text()',
                         doc)
                 film.setAttribute ("seeifyouliked", seeifyouliked)
 
