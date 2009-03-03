@@ -145,7 +145,7 @@ show
 or
 <a href="javascript:soon();">showings starting soon (now to +1 hour)</a><br/>
 <a href="javascript:hideseen();">hide</a>
-of
+or
 <a href="javascript:resetseen();">reset</a>
 seen
 <br/>
@@ -199,12 +199,12 @@ seen
                         or
                         <a href="javascript:showtitle('{../../@title}');">only</a>
                         show this title.
+                        <br/>
                 </td>
                 <td style="vertical-align: top">
                         <img src="{../../@img}"/>
                 </td>
         </tr>
-        <tr><td><br/></td></tr>
         </xsl:for-each>
 </table>
 </body>
