@@ -35,7 +35,6 @@ function resetseen() {
         setCookie("titles", "");
 }
 
-
 function markseen(name) {
         titles = getCookie("titles");
         if(titles.length == 0) {
@@ -157,12 +156,14 @@ seen
         <xsl:sort select="substring(@time,9,2)"/>
         <xsl:sort select="substring(@time,12,2)"/>
         <xsl:sort select="substring(@time,15,2)"/>
+        <xsl:if test="position() &lt; 64">
 
         <xsl:variable name="stime" select="concat(substring(@time,1,4),substring(@time,6,2),substring(@time,9,2),substring(@time,12,2),substring(@time,15,2))"/>
 
         <tr id="film">
                 <td id="{../../@title}" />
                 <td id="{$stime}" />
+                <td id="position()" />
                 <td>
                         <b><xsl:value-of select="substring(@time,1,16)"/></b>
                         <a href="{../../@url}">
@@ -200,11 +201,13 @@ seen
                         <a href="javascript:showtitle('{../../@title}');">only</a>
                         show this title.
                         <br/>
+                        <br/>
                 </td>
                 <td style="vertical-align: top">
                         <img src="{../../@img}"/>
                 </td>
         </tr>
+        </xsl:if>
         </xsl:for-each>
 </table>
 </body>
