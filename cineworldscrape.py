@@ -25,6 +25,7 @@ import xml.dom.ext.reader.Sax2
 import xml.xpath
 import xml.dom.ext
 import xml.dom.minidom
+from pprint import pprint
 
 class CineworldScrape:
         def __init__ (self, cinema = 61): 
@@ -52,16 +53,18 @@ class CineworldScrape:
 
         def filmurls (self):
                 doc = self.downloadtidyparse (self.listingsurl)
-                urls = xml.xpath.Evaluate ('//h3[@class="first"]/a/@href', doc)
+                urls = xml.xpath.Evaluate ('//h3[@class="filmtitle"]/a/@href', doc)
                 base = "http://www.cineworld.co.uk"
                 urls = [ base + url.nodeValue for url in urls ] 
                 return urls
 
-        def xpath (self, xp, doc):
+        def xpath (self, xp, doc, debug=0):
                 result = xml.xpath.Evaluate (xp, doc)
-                #print 'hits: %s' % (len (result))
-                #for r in result:
-                #        print 'hit: %s' % (r.nodeValue)
+                if(debug == 1):
+                        print 'hits: %s' % (len (result))
+                        for r in result:
+                                print 'hit: %s' % (r.nodeValue)
+
                 if len (result) == 1:
                         result = result[0].nodeValue.replace ("\n", " ").\
                                 strip ()
@@ -75,62 +78,64 @@ class CineworldScrape:
         def scrapefilm (self, doc):
                 film = xml.dom.minidom.Document().createElement ("film")
 
-                title = self.xpath ('//h3[@class="large-title first"]/text()',\
+                img = self.xpath ('//li[@class="film-detail"]/img/@src', doc)
+                img = "http://www.cineworld.co.uk" + img
+                film.setAttribute ("img", img)
+
+                title = self.xpath ('//h3[@class="filmtitle"]/text()',\
                         doc)
                 title = title.title ()
                 film.setAttribute ("title", title)
 
-                img = self.xpath (
-                        '//div[@class="sub"]/div[@class="image"]/img/@src',
-                        doc)
-                img = "http://www.cineworld.co.uk" + img
-                film.setAttribute ("img", img)
+                cert = self.xpath ('//img[@class="cert-icon"]/@alt', doc)
+                film.setAttribute ("cert", cert)
 
                 certdesc = self.xpath ('//img[@class="cert-icon"]/@title', doc)
                 film.setAttribute ("certdesc", certdesc)
-
-                cert = self.xpath ('//img[@class="cert-icon"]/@alt', doc)
-                film.setAttribute ("cert", cert)
 
                 certimg = self.xpath ('//img[@class="cert-icon"]/@src', doc)
                 certimg = "http://www.cineworld.co.uk" + certimg
                 film.setAttribute ("certimg", certimg)
 
-                release = self.xpath ('//div[@class="main"]/p[2]/text()', doc)
+                release = self.xpath ('//div[@class="clearfix"]/p[2]/text()',
+                        doc)
                 film.setAttribute ("release", release)
 
-                runtime = self.xpath ('//div[@class="main"]/p[3]/text()', doc)
+                runtime = self.xpath ('//div[@class="clearfix"]/p[3]/text()',
+                        doc)
                 film.setAttribute ("runtime", runtime)
 
-                director = self.xpath ('//div[@class="main"]/p[4]/text()', doc)
+                director = self.xpath ('//div[@class="clearfix"]/p[4]/text()',
+                        doc)
                 film.setAttribute ("director", director)
 
-                staring = self.xpath ('//div[@class="main"]/p[5]/text()', doc)
+                staring = self.xpath ('//div[@class="clearfix"]/p[5]/text()',
+                        doc)
                 film.setAttribute ("staring", staring)
 
-                flv = self.xpath ('//div[@id="flashcontent"]/text()', doc)
-                
-                summary = self.xpath ('//div[@id="summary"]/p/text()', doc)
-                film.setAttribute ("summary", summary)
+                #flv = self.xpath ('//div[@class="lead"]/div[@class="clearfix"]/script[@type="text/javascript"]/text()', doc)
 
+                summary = self.xpath ('//div[@class="synopsis hide-js"]/p[1]/text()', doc)
+                film.setAttribute ("summary", summary)
+                
                 synopsis = self.xpath (
-                        '//div[@id="synopsis"]/p[2]/text()', doc)
+                        '//div[@class="synopsis hide-js"]/p[2]/text()', doc)
                 film.setAttribute ("synopsis", synopsis)
 
-                screenplay = self.xpath ('//div[@id="synopsis"]/p[3]/text()',
-                        doc)
+                screenplay = self.xpath (
+                        '//div[@class="synopsis hide-js"]/p[3]/text()', doc)
                 film.setAttribute ("screenplay", screenplay)
                 
-                distributor = self.xpath ('//div[@id="synopsis"]/p[4]/text()',
-                        doc)
+                distributor = self.xpath (
+                        '//div[@class="synopsis hide-js"]/p[4]/text()', doc)
                 film.setAttribute ("distributor", distributor)
 
-                seebecause = self.xpath ('//div[@id="synopsis"]/p[5]/text()',
-                        doc)
+                seebecause = self.xpath (
+                        '//div[@class="synopsis hide-js"]/p[5]/text()', doc)
                 film.setAttribute ("seebecause", seebecause)
 
-                seeifyouliked = self.xpath ('//div[@id="synopsis"]/p[6]/text()',
-                        doc)
+                seeifyouliked = self.xpath (
+                        '//div[@class="synopsis hide-js"]/p[6]/text()', doc)
                 film.setAttribute ("seeifyouliked", seeifyouliked)
 
                 showings = xml.dom.minidom.Document().createElement("showings")
@@ -191,20 +196,20 @@ class CineworldScrape:
 if __name__ == "__main__":
         c=CineworldScrape ()
 
-        #urls = c.listingsurl ()
+        #pprint(c.filmurls())
+        #sys.exit()
 
         #doc = xml.dom.minidom.Document ()
         #cinemalistings = doc.createElement ("cinemalistings")
         #doc.appendChild (cinemalistings)
 
-        #url="http://www.cineworld.co.uk/cinemas/61?film=175"
+        #url="http://www.cineworld.co.uk/cinemas/61?film=2518"
         #filmdoc = c.downloadtidyparse (url)
         #film = c.scrapefilm (filmdoc)
         #cinemalistings.appendChild (film)
 
         #print doc.toprettyxml (indent="  ")
         #sys.exit ()
-        #print c.scrape ().toprettyxml (indent="  ")
 
         doc = c.scrape ()
         xml.dom.ext.PrettyPrint (doc, open ("/home/thomas/www/cw/cw.xml", "w"))
