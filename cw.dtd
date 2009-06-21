@@ -19,6 +19,7 @@
 <!ATTLIST film staring CDATA #REQUIRED>
 <!ATTLIST film summary CDATA #REQUIRED>
 <!ATTLIST film title CDATA #REQUIRED>
+<!ATTLIST film trailer CDATA #REQUIRED>
 <!ATTLIST film url CDATA #REQUIRED>
 
 <!ELEMENT showings (showing*)>

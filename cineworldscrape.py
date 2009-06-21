@@ -17,6 +17,7 @@
 import datetime
 import libxml2
 import libxslt
+import re
 import sys
 import tidy
 import time
@@ -113,7 +114,15 @@ class CineworldScrape:
                         doc)
                 film.setAttribute ("staring", staring)
 
-                #flv = self.xpath ('//div[@class="lead"]/div[@class="clearfix"]/script[@type="text/javascript"]/text()', doc)
+                trailer = xml.xpath.Evaluate ('//div[@class="lead"]/script[@type="text/javascript"]/text()', doc)
+                if len(trailer) == 3:
+                        trailer = trailer[1].nodeValue
+                        trailer = trailer.replace("\n", " ").strip()
+                        trailer = re.sub('.*trailer: "http(.*)flv".*',
+                                r'http\1flv', trailer)
+                else:
+                        trailer=""   
+                film.setAttribute ("trailer", trailer)
 
                 summary = self.xpath ('//div[@class="synopsis hide-js"]/p[1]/text()', doc)
                 film.setAttribute ("summary", summary)
