@@ -81,7 +81,7 @@ function hidetitle(title) {
 
 function showtitle(title) {
         var showings = document.evaluate(
-                "//tr[@id='film']/td[@id!='" + title + "']" ,
+                "//tr[@id='film']/td[1][@id!='" + title + "']" ,
                 document, null, XPathResult.ORDERED_NODE_SNAPSHOT_TYPE, null);
         hideshowings(showings) 
 }
