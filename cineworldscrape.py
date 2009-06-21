@@ -56,7 +56,8 @@ class CineworldScrape:
 
         def filmurls (self):
                 doc = self.downloadtidyparse (self.listingsurl)
-                urls = xml.xpath.Evaluate ('//h3[@class="filmtitle"]/a/@href', doc)
+                urls = xml.xpath.Evaluate ('//h3[@class="filmtitle"]/a/@href',
+                        doc)
                 base = "http://www.cineworld.co.uk"
                 urls = [ base + url.nodeValue for url in urls ] 
                 return urls
@@ -83,8 +84,7 @@ class CineworldScrape:
                 img = "http://www.cineworld.co.uk" + img
                 film.setAttribute ("img", img)
 
-                title = self.xpath ('//h3[@class="filmtitle"]/text()',\
-                        doc)
+                title = self.xpath ('//h3[@class="filmtitle"]/text()', doc)
                 title = title.title ()
                 film.setAttribute ("title", title)
 
@@ -98,20 +98,17 @@ class CineworldScrape:
                 certimg = "http://www.cineworld.co.uk" + certimg
                 film.setAttribute ("certimg", certimg)
 
-                release = self.xpath ('//div[@class="clearfix"]/p[2]/text()',
-                        doc)
+                release = self.xpath ('//p[strong="Release Date:"]/text()', doc)
                 film.setAttribute ("release", release)
 
-                runtime = self.xpath ('//div[@class="clearfix"]/p[3]/text()',
-                        doc)
+                runtime = self.xpath ('//p[strong="Running time:"]/text()', doc)
                 film.setAttribute ("runtime", runtime)
 
-                director = self.xpath ('//div[@class="clearfix"]/p[4]/text()',
+                director = self.xpath ('//p[strong="Director:"]/text()',
                         doc)
                 film.setAttribute ("director", director)
 
-                staring = self.xpath ('//div[@class="clearfix"]/p[5]/text()',
-                        doc)
+                staring = self.xpath ('//p[strong="Starring:"]/text()', doc)
                 film.setAttribute ("staring", staring)
 
                 trailer = xml.xpath.Evaluate ('//div[@class="lead"]/script[@type="text/javascript"]/text()', doc)
@@ -124,7 +121,8 @@ class CineworldScrape:
                         trailer=""   
                 film.setAttribute ("trailer", trailer)
 
-                summary = self.xpath ('//div[@class="synopsis hide-js"]/p[1]/text()', doc)
+                summary = self.xpath (
+                        '//div[@class="synopsis hide-js"]/p[1]/text()', doc)
                 film.setAttribute ("summary", summary)
                 
                 synopsis = self.xpath (
@@ -132,19 +130,19 @@ class CineworldScrape:
                 film.setAttribute ("synopsis", synopsis)
 
                 screenplay = self.xpath (
-                        '//div[@class="synopsis hide-js"]/p[3]/text()', doc)
+                        '//p[strong="Screenplay:"]/text()', doc)
                 film.setAttribute ("screenplay", screenplay)
                 
                 distributor = self.xpath (
-                        '//div[@class="synopsis hide-js"]/p[4]/text()', doc)
+                        '//p[strong="Distributor:"]/text()', doc)
                 film.setAttribute ("distributor", distributor)
 
                 seebecause = self.xpath (
-                        '//div[@class="synopsis hide-js"]/p[5]/text()', doc)
+                        '//p[strong="You should see it because:"]/text()', doc)
                 film.setAttribute ("seebecause", seebecause)
 
                 seeifyouliked = self.xpath (
-                        '//div[@class="synopsis hide-js"]/p[6]/text()', doc)
+                        '//p[strong="See it if you liked:"]/text()', doc)
                 film.setAttribute ("seeifyouliked", seeifyouliked)
 
                 showings = xml.dom.minidom.Document().createElement("showings")
