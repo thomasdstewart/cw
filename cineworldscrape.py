@@ -211,12 +211,16 @@ if __name__ == "__main__":
                         "transform"])
         except getopt.error, msg:
                 print str(msg)
-                #usage()
                 sys.exit(2)
 
         for o, a in opts:
                 if o in ("-h", "--help"):
-                        #usage()
+                        print "cineworldscrape standalone"
+                        print "--help this info"
+                        print "--testurls test grabbing main url list"
+                        print "--testscrape test one title"
+                        print "--scrape scrape all"
+                        print "--transform apply xsl to output"
                         sys.exit()
 
                 elif o in ("--testurls"):
