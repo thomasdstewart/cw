@@ -43,6 +43,7 @@ class CineworldScrape:
                 options = dict (
                         add_xml_decl=1,
                         output_xhtml=1,
+                        output_encoding="utf8",
                         show_warnings=0,
                         indent=0,
                         bare=1,
@@ -68,9 +69,7 @@ class CineworldScrape:
                                 print 'hit: %s' % (r.nodeValue)
 
                 if len (result) == 1:
-                        result = result[0].nodeValue.replace ("\n", " ").\
-                                strip ()
-                        result = result.encode ('ascii', 'replace')
+                        result = result[0].nodeValue.replace("\n", " ").strip()
                         return result
                 elif len (result) > 1:
                         return "ERROR (more than one result)"
@@ -155,7 +154,6 @@ class CineworldScrape:
                         if r.nodeType == xml.dom.Node.TEXT_NODE:
                                 y = str(datetime.datetime.now().year)
                                 d = r.nodeValue
-                                d = d.encode ('ascii', 'replace')
                                 d = datetime.datetime (*(time.strptime \
                                         (y + " " + d, "%Y %a %d %b")[0:6]))
                                 day = str(d.year) + "-" + str(d.month) \
