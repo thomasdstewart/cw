@@ -15,6 +15,7 @@
 #along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import datetime
+import getopt
 import libxml2
 import libxslt
 import re
@@ -205,27 +206,57 @@ class CineworldScrape:
 if __name__ == "__main__":
         c=CineworldScrape ()
 
-        #pprint(c.filmurls())
-        #sys.exit()
+        scrape=0
+        transform=0
 
-        #doc = xml.dom.minidom.Document ()
-        #cinemalistings = doc.createElement ("cinemalistings")
-        #doc.appendChild (cinemalistings)
+        try:
+                opts, args = getopt.getopt(sys.argv[1:], "h",
+                        ["help", "testurls", "testscrape", "scrape",
+                        "transform"])
+        except getopt.error, msg:
+                print str(msg)
+                #usage()
+                sys.exit(2)
 
-        #url="http://www.cineworld.co.uk/cinemas/61?film=2518"
-        #filmdoc = c.downloadtidyparse (url)
-        #film = c.scrapefilm (filmdoc)
-        #cinemalistings.appendChild (film)
+        for o, a in opts:
+                if o in ("-h", "--help"):
+                        #usage()
+                        sys.exit()
 
-        #print doc.toprettyxml (indent="  ")
-        #sys.exit ()
+                elif o in ("--testurls"):
+                        pprint(c.filmurls())
+                        sys.exit()
 
-        doc = c.scrape ()
-        xml.dom.ext.PrettyPrint (doc, open ("/home/thomas/www/cw/cw.xml", "w"))
+                elif o in ("--testscrape"):
+                        doc = xml.dom.minidom.Document ()
+                        cinemalistings = doc.createElement ("cinemalistings")
+                        doc.appendChild (cinemalistings)
 
-        styledoc = libxml2.parseFile ("/home/thomas/www/cw/cw.xsl")
-        style = libxslt.parseStylesheetDoc (styledoc)
-        doc = libxml2.parseFile ("/home/thomas/www/cw/cw.xml")
-        result = style.applyStylesheet (doc, None)
-        style.saveResultToFilename ("/home/thomas/www/cw/cw.html", result, 0)
+                        url="http://www.cineworld.co.uk/cinemas/61?film=2645"
+                        filmdoc = c.downloadtidyparse (url)
+                        film = c.scrapefilm (filmdoc)
+                        cinemalistings.appendChild (film)
+
+                        print doc.toprettyxml (indent="  ")
+                        sys.exit ()
+
+                elif o in ("--scrape"):
+                        scrape=1
+
+                elif o in ("--transform"):
+                        transform=1
+
+        if scrape:
+                doc = c.scrape ()
+                xml.dom.ext.PrettyPrint (doc,
+                        open ("/home/thomas/www/cw/cw.xml", "w"))
+
+        if transform:
+                styledoc = libxml2.parseFile(
+                        "/home/thomas/www/cw/cw.xsl")
+                style = libxslt.parseStylesheetDoc (styledoc)
+                doc = libxml2.parseFile ("/home/thomas/www/cw/cw.xml")
+                result = style.applyStylesheet (doc, None)
+                style.saveResultToFilename(
+                        "/home/thomas/www/cw/cw.html", result, 0)
 
