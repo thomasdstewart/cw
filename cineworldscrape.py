@@ -30,10 +30,10 @@ import xml.dom.minidom
 from pprint import pprint
 
 class CineworldScrape:
-        def __init__ (self, cinema = 61): 
-                self.cinema = cinema
+        def __init__ (self, cinemaname = 'Stevenage'): 
+                self.cinemaid = self.cinema(cinemaname)
                 self.listingsurl = "http://www.cineworld.co.uk/cinemas/" \
-                        + str (self.cinema)
+                        + str (self.cinemaid)
 
         def downloadtidyparse (self, url):
                 raw = urllib.urlopen (url)
@@ -53,6 +53,23 @@ class CineworldScrape:
 
                 reader = xml.dom.ext.reader.Sax2.Reader ()
                 return reader.fromString (html)
+
+        def cinema (self, name):
+                doc = self.downloadtidyparse ('http://www.cineworld.co.uk/')
+                results = xml.xpath.Evaluate ('//select[@id="cinema"]/option',
+                        doc)
+
+                cinemas = {}
+                for r in results:
+                        i = xml.xpath.Evaluate('@value', r)[0].nodeValue
+                        n = xml.xpath.Evaluate('text()', r)[0].nodeValue
+                        if i > 0:
+                                cinemas[n] = i
+
+                if name in cinemas:
+                        return cinemas[name]
+                else:
+                        return 0
 
         def filmurls (self):
                 doc = self.downloadtidyparse (self.listingsurl)
@@ -207,8 +224,8 @@ if __name__ == "__main__":
 
         try:
                 opts, args = getopt.getopt(sys.argv[1:], "h",
-                        ["help", "testurls", "testscrape", "scrape",
-                        "transform"])
+                        ["help", "testcinema", "testurls", "testscrape",
+                        "scrape", "transform"])
         except getopt.error, msg:
                 print str(msg)
                 sys.exit(2)
@@ -217,10 +234,15 @@ if __name__ == "__main__":
                 if o in ("-h", "--help"):
                         print "cineworldscrape standalone"
                         print "--help this info"
+                        print "--testcinema tst cinema list"
                         print "--testurls test grabbing main url list"
                         print "--testscrape test one title"
                         print "--scrape scrape all"
                         print "--transform apply xsl to output"
+                        sys.exit()
+
+                elif o in ("--testcinema"):
+                        pprint(c.cinemaid)
                         sys.exit()
 
                 elif o in ("--testurls"):
