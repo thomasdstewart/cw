@@ -104,6 +104,7 @@ class CineworldScrape:
                 title = self.xpath ('//h3[@class="filmtitle"]/text()', doc)
                 title = title.title ()
                 title = title.replace("'S", "'s")
+                title = title.replace("'", "")
                 film.setAttribute ("title", title)
 
                 cert = self.xpath ('//img[@class="cert-icon"]/@alt', doc)
