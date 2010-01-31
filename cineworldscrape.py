@@ -27,7 +27,8 @@ import xml.dom.ext.reader.Sax2
 import xml.xpath
 import xml.dom.ext
 import xml.dom.minidom
-from pprint import pprint
+import pprint
+pp = pprint.PrettyPrinter(depth=6)
 
 class CineworldScrape:
         def __init__ (self, cinemaname = 'Stevenage'): 
@@ -55,9 +56,10 @@ class CineworldScrape:
                 return reader.fromString (html)
 
         def cinema (self, name):
-                doc = self.downloadtidyparse ('http://www.cineworld.co.uk/')
-                results = xml.xpath.Evaluate ('//select[@id="cinema"]/option',
-                        doc)
+                url = 'http://www.cineworld.co.uk/cinemas'
+                doc = self.downloadtidyparse (url)
+                results = xml.xpath.Evaluate (
+                        '//select[@id="cinema"]/option', doc)
 
                 cinemas = {}
                 for r in results:
@@ -244,11 +246,11 @@ if __name__ == "__main__":
                         sys.exit()
 
                 elif o in ("--testcinema"):
-                        pprint(c.cinemaid)
+                        pp.pprint(c.cinemaid)
                         sys.exit()
 
                 elif o in ("--testurls"):
-                        pprint(c.filmurls())
+                        pp.pprint(c.filmurls())
                         sys.exit()
 
                 elif o in ("--testscrape"):
@@ -256,7 +258,7 @@ if __name__ == "__main__":
                         cinemalistings = doc.createElement ("cinemalistings")
                         doc.appendChild (cinemalistings)
 
-                        url="http://www.cineworld.co.uk/cinemas/61?film=2645"
+                        url="http://www.cineworld.co.uk/cinemas/61?film=3091"
                         filmdoc = c.downloadtidyparse (url)
                         film = c.scrapefilm (filmdoc)
                         cinemalistings.appendChild (film)
