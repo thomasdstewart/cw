@@ -1,0 +1,18 @@
+cineworldscrape -  converts cinema listings to xml
+
+It's a small python program that web scrapes the Cineworld website to convert
+the cinema listing into xml format. For more information see: 
+http://www.stewarts.org.uk/tomsweb/CineworldScrape
+
+There are two ways to use it, either use the CineworldScrape class from your
+own python programs or run it directly in standalone mode. The usual --help
+will give a list of the various options. The main options are --scrape and
+--transform. The former does the web scraping and writes the result to cw.xml
+and the latter takes the xml and an xslt to produce a web mobile friendly
+html file. I use the following cron entry to keep the data up to date:
+0 5 * * * ~/www/cw/cineworldscrape.py --scrape --transform
+
+You are free to download and run this yourself but you might need to change the
+cinemaname defined in the class constructor from Stevenage to your local cinema.
+
+Feel free to drop me a email with any questions of comments.
