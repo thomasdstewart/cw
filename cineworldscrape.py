@@ -143,7 +143,7 @@ class CineworldScrape:
                 film.setAttribute ("trailer", trailer)
 
                 summary = self.xpath (
-                        '//div[@class="synopsis hide-js"]/p[1]/text()', doc)
+                        '//div[@class="summary show-js"]/p[1]/text()', doc)
                 film.setAttribute ("summary", summary)
                 
                 synopsis = self.xpath (
