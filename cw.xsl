@@ -238,6 +238,7 @@ or
                                 </b>
                         </div>
                         <br/>
+                        <small>
                         <a href="javascript:toggleid('{../../@title}-extra');">
                         extra info</a>
                         <br/>
@@ -253,6 +254,7 @@ or
                         or
                         <a href="javascript:showtitle('{../../@title}');">only</a>
                         show this title.
+                        </small>
                         <br/>
                         <br/>
                 </td>
