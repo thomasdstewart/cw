@@ -65,6 +65,16 @@ function hideseen(name){
         }
 }
 
+function seenmsg(name){
+        titles = getCookie("titles");
+        titles = titles.split("^");
+        titlesmsg = ""
+        for(i = 0; i &lt; titles.length; i++) {
+                titlesmsg = titlesmsg + ", " + titles[i]
+        }
+        alert(titlesmsg)
+}
+
 function hideshowings(showings) {
         for (var i = 0; i &lt; showings.snapshotLength; i++) {
                 var showing = showings.snapshotItem(i).parentNode;
@@ -136,17 +146,41 @@ function soon() {
         hideafter(day + time);
 }
 
+function today() {
+        day = getday();
+        var d = new Date();
+
+        var hours = String(d.getHours());
+        var minutes = String(d.getMinutes());
+        time = hours + minutes;
+        hidebefore(day + time);
+
+        hideafter(day  + "2400");
+}
+
+function toggleid(id) {
+        var el = document.getElementById(id);
+        if(el.style.display == "block") {
+                el.style.display = "none";
+        }
+        else {
+                el.style.display = "block";
+        }
+}
+
 </script>
 </head>
 <body>
-show
-<a href="javascript:eve();">evening showings (18:45 to 22:45)</a>
+show today
+<a href="javascript:today();">now till end of play</a>
+<!-- or
+<a href="javascript:eve();">evening showings (18:45 to 22:45)</a> -->
 or
 <a href="javascript:soon();">showings starting soon (now to +1 hour)</a><br/>
 <a href="javascript:hideseen();">hide</a>
 or
 <a href="javascript:resetseen();">reset</a>
-seen
+<a href="javascript:seenmsg();">seen</a>
 <br/>
 <br/>
 <table>
@@ -156,7 +190,7 @@ seen
         <xsl:sort select="substring(@time,9,2)"/>
         <xsl:sort select="substring(@time,12,2)"/>
         <xsl:sort select="substring(@time,15,2)"/>
-        <xsl:if test="position() &lt; 64">
+        <!-- <xsl:if test="position() &lt; 640"> -->
 
         <xsl:variable name="stime" select="concat(substring(@time,1,4),substring(@time,6,2),substring(@time,9,2),substring(@time,12,2),substring(@time,15,2))"/>
 
@@ -171,22 +205,41 @@ seen
                         </a>
                         Summary:
                         <b><xsl:value-of select="../../@summary"/></b>
-                        Runtime:
-                        <b><xsl:value-of select="../../@runtime"/></b>
-                        Release:
-                        <b><xsl:value-of select="../../@release"/></b>
-                        Director:
-                        <b><xsl:value-of select="../../@director"/></b>
-                        Distributor:
-                        <b><xsl:value-of select="../../@distributor"/></b>
                         Staring:
                         <b><xsl:value-of select="../../@staring"/></b>
-                        Screen Play:
-                        <b><xsl:value-of select="../../@screenplay"/></b>
-                        See because:
-                        <b><xsl:value-of select="../../@seebecause"/></b>
-                        See if you liked:
-                        <b><xsl:value-of select="../../@seeifyouliked"/></b>
+                        <div id="{../../@title}-extra" style="display: none">
+                                Runtime:
+                                <b>
+                                <xsl:value-of select="../../@runtime"/>
+                                </b>
+                                Release:
+                                <b>
+                                <xsl:value-of select="../../@release"/>
+                                </b>
+                                Director:
+                                <b>
+                                <xsl:value-of select="../../@director"/>
+                                </b>
+                                Distributor:
+                                <b>
+                                <xsl:value-of select="../../@distributor"/>
+                                </b>
+                                Screen Play:
+                                <b>
+                                <xsl:value-of select="../../@screenplay"/>
+                                </b>
+                                See because:
+                                <b>
+                                <xsl:value-of select="../../@seebecause"/>
+                                </b>
+                                See if you liked:
+                                <b>
+                                <xsl:value-of select="../../@seeifyouliked"/>
+                                </b>
+                        </div>
+                        <br/>
+                        <a href="javascript:toggleid('{../../@title}-extra');">
+                        extra info</a>
                         <br/>
                         Hide showings
                         <a href="javascript:hidebefore('{$stime}');">before</a>
@@ -207,7 +260,7 @@ seen
                         <img src="{../../@img}"/>
                 </td>
         </tr>
-        </xsl:if>
+        <!-- </xsl:if> -->
         </xsl:for-each>
 </table>
 </body>
