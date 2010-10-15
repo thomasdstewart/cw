@@ -238,7 +238,7 @@ if __name__ == "__main__":
                 if o in ("-h", "--help"):
                         print "cineworldscrape standalone"
                         print "--help this info"
-                        print "--testcinema tst cinema list"
+                        print "--testcinema test cinema list"
                         print "--testurls test grabbing main url list"
                         print "--testscrape test one title"
                         print "--scrape scrape all"
