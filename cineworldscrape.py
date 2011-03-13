@@ -136,8 +136,8 @@ class CineworldScrape:
                 if len(trailer) == 3:
                         trailer = trailer[1].nodeValue
                         trailer = trailer.replace("\n", " ").strip()
-                        trailer = re.sub('.*trailer: "http(.*)flv".*',
-                                r'http\1flv', trailer)
+                        trailer = re.sub('.*trailer: "http(.*)mp4".*',
+                                r'http\1mp4', trailer)
                 else:
                         trailer=""   
                 film.setAttribute ("trailer", trailer)
