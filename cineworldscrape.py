@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-
 #Copyright (C) 2009-2011 Thomas Stewart <thomas@stewarts.org.uk>
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
@@ -31,6 +30,7 @@ pp = pprint.PrettyPrinter(depth=6)
 
 class CineworldScrape:
         def __init__ (self, cinemaname = 'Stevenage'): 
+                self.cinemaname = cinemaname
                 self.cinemaid = self.cinema(cinemaname)
                 self.listingsurl = "http://www.cineworld.co.uk/cinemas/" \
                         + str(self.cinemaid)
@@ -68,7 +68,7 @@ class CineworldScrape:
 
         def xpath (self, doc, xpath, debug=0):
                 result = doc.xpath(xpath)
-                if debug == 1:
+                if debug:
                         print 'hits: %s' % (len(result))
                         for r in result:
                                 print 'hit: %s' % (r)
@@ -116,9 +116,11 @@ class CineworldScrape:
                 staring = self.xpath(doc, '//p[strong="Starring:"]/text()')
                 film.setAttribute("staring", staring)
 
-                trailer = self.xpath(doc, '//div[@class="lead"]/script[@type="text/javascript"]/text()')
+                trailer = self.xpath(doc, '//div[@class="lead"]/'
+                        + 'script[@type="text/javascript"]/text()')
                 trailer = trailer.replace("\n", " ").strip()
-                trailer = re.sub('.*trailer: "http(.*)mp4".*', r'http\1mp4', trailer)
+                trailer = re.sub('.*trailer: "http(.*)mp4".*',
+                        r'http\1mp4', trailer)
                 film.setAttribute("trailer", trailer)
 
                 summary = self.xpath(doc, 
@@ -129,8 +131,7 @@ class CineworldScrape:
                         '//div[@class="synopsis hide-js"]/p[2]/text()')
                 film.setAttribute("synopsis", synopsis)
 
-                screenplay = self.xpath(doc,
-                        '//p[strong="Screenplay:"]/text()')
+                screenplay = self.xpath(doc, '//p[strong="Screenplay:"]/text()')
                 film.setAttribute("screenplay", screenplay)
                 
                 distributor = self.xpath(doc,
@@ -147,13 +148,11 @@ class CineworldScrape:
 
                 showings = xml.dom.minidom.Document().createElement("showings")
                 film.appendChild(showings)
-                day = ""
                 for r in doc.xpath('//dl/dt/text()|//dl/dd/a'):
                         if not lxml.etree.iselement(r):
                                 y = str(datetime.datetime.now().year)
-                                d = r
-                                d = datetime.datetime(*(time.strptime \
-                                        (y + " " + d, "%Y %a %d %b")[0:6]))
+                                d = datetime.datetime(*(time.strptime 
+                                        (y + " " + r, "%Y %a %d %b")[0:6]))
                                 day = str(d.year) + "-" + str(d.month) \
                                         + "-" + str(d.day)
 
@@ -166,7 +165,8 @@ class CineworldScrape:
                                 showing.setAttribute("url", url)
                                 
                                 showingtime = r.xpath('text()')
-                                showingtime = showingtime[0].replace("\n", " ").strip()
+                                showingtime = showingtime[0]. \
+                                        replace("\n", " ").strip()
                                 showingtime = day + " " + showingtime[0:5]
                                 showingtime = datetime.datetime(*( \
                                         time.strptime(showingtime, \
@@ -178,7 +178,7 @@ class CineworldScrape:
 
                 return film
                
-        def scrape (self):
+        def scrape (self, debug=0):
                 doc = xml.dom.minidom.Document()
                 #imp = xml.dom.minidom.getDOMImplementation()
                 #dt = imp.createDocumentType("cinemalistings", "", "cw.dtd")
@@ -188,7 +188,7 @@ class CineworldScrape:
 
                 cinemalistings = doc.createElement("cinemalistings")
                 cinemalistings.setAttribute("chain", "Cineworld")
-                cinemalistings.setAttribute("location", "Stevenage")
+                cinemalistings.setAttribute("location", self.cinemaname)
                 cinemalistings.setAttribute("url", self.listingsurl)
                 doc.appendChild(cinemalistings)
 
@@ -198,6 +198,8 @@ class CineworldScrape:
                         film = self.scrapefilm(filmdoc)
                         film.setAttribute("url", url)
                         cinemalistings.appendChild(film)
+                        if debug:
+                                break
                 
                 return doc
 
@@ -208,7 +210,7 @@ if __name__ == "__main__":
         transform=0
 
         try:
-                opts, args = getopt.getopt(sys.argv[1:], "h",
+                opts, args = getopt.getopt(sys.argv[1:], "hst",
                         ["help", "testcinema", "testurls", "testscrape",
                         "scrape", "transform"])
         except getopt.error, msg:
@@ -218,12 +220,12 @@ if __name__ == "__main__":
         for o, a in opts:
                 if o in ("-h", "--help"):
                         print "cineworldscrape [options...]"
-                        print "  --help        this info"
-                        print "  --testcinema  test cinema list"
-                        print "  --testurls    test grabbing main url list"
-                        print "  --testscrape  test one title"
-                        print "  --scrape      scrape all"
-                        print "  --transform   apply xsl to output"
+                        print "  -h --help        this info"
+                        print "     --testcinema  test cinema list"
+                        print "     --testurls    test grabbing main url list"
+                        print "     --testscrape  test one title"
+                        print "  -s --scrape      scrape all"
+                        print "  -t --transform   apply xsl to output"
                         sys.exit()
 
                 elif o in ("--testcinema"):
@@ -235,35 +237,27 @@ if __name__ == "__main__":
                         sys.exit()
 
                 elif o in ("--testscrape"):
-                        doc = xml.dom.minidom.Document()
-                        cinemalistings = doc.createElement("cinemalistings")
-                        doc.appendChild(cinemalistings)
-
-                        filmdoc = c.downloadparse(c.filmurls()[0])
-                        film = c.scrapefilm(filmdoc)
-                        cinemalistings.appendChild(film)
-
+                        doc = c.scrape(debug=1)
                         print doc.toprettyxml()
                         sys.exit()
 
-                elif o in ("--scrape"):
+                elif o in ("-s", "--scrape"):
                         scrape=1
 
-                elif o in ("--transform"):
+                elif o in ("-t", "--transform"):
                         transform=1
 
+        base='/home/thomas/www/cw/'
         if scrape:
                 doc = c.scrape()
-                xmlfile = open("/home/thomas/www/cw/cw.xml", "w")
+                xmlfile = open(base + "cw.xml", "w")
                 xmlfile.write(doc.toprettyxml())
                 xmlfile.close()
 
         if transform:
-                styledoc = libxml2.parseFile(
-                        "/home/thomas/www/cw/cw.xsl")
+                styledoc = libxml2.parseFile(base + "cw.xsl")
                 style = libxslt.parseStylesheetDoc(styledoc)
-                doc = libxml2.parseFile("/home/thomas/www/cw/cw.xml")
+                doc = libxml2.parseFile(base + "cw.xml")
                 result = style.applyStylesheet(doc, None)
-                style.saveResultToFilename(
-                        "/home/thomas/www/cw/cw.html", result, 0)
+                style.saveResultToFilename(base + "cw.html", result, 0)
 
