@@ -35,7 +35,7 @@ class CineworldScrape:
                 self.listingsurl = "http://www.cineworld.co.uk/cinemas/" \
                         + str(self.cinemaid)
 
-        def downloadtidyparse (self, url):
+        def downloadparse (self, url):
                 raw = urllib.urlopen(url)
                 html = raw.read()
                 raw.close()
@@ -44,7 +44,7 @@ class CineworldScrape:
 
         def cinema (self, name):
                 url = 'http://www.cineworld.co.uk/cinemas'
-                doc = self.downloadtidyparse(url)
+                doc = self.downloadparse(url)
                 results = doc.xpath('//select[@id="cinema"]/option')
 
                 cinemas = {}
@@ -60,7 +60,7 @@ class CineworldScrape:
                         return 0
 
         def filmurls (self):
-                doc = self.downloadtidyparse(self.listingsurl)
+                doc = self.downloadparse(self.listingsurl)
                 urls = doc.xpath('//h3[@class="filmtitle"]/a/@href')
                 base = "http://www.cineworld.co.uk"
                 urls = [ base + url for url in urls ] 
@@ -180,8 +180,10 @@ class CineworldScrape:
                
         def scrape (self):
                 doc = xml.dom.minidom.Document()
-                #doctype = xml.dom.minidom.DocumentType('cw.dtd')
-                #doc.appendChild (doctype)
+                #imp = xml.dom.minidom.getDOMImplementation()
+                #dt = imp.createDocumentType("cinemalistings", "", "cw.dtd")
+                #doc = imp.createDocument(None, "cinemalistings", dt)
+
                 #my $xml_i = $xml->createProcessingInstruction ("xml-stylesheet", 'type="text/xsl" href="cw.xsl"');
 
                 cinemalistings = doc.createElement("cinemalistings")
@@ -192,7 +194,7 @@ class CineworldScrape:
 
                 urls = self.filmurls()
                 for url in urls:
-                        filmdoc = self.downloadtidyparse(url)
+                        filmdoc = self.downloadparse(url)
                         film = self.scrapefilm(filmdoc)
                         film.setAttribute("url", url)
                         cinemalistings.appendChild(film)
@@ -215,13 +217,13 @@ if __name__ == "__main__":
 
         for o, a in opts:
                 if o in ("-h", "--help"):
-                        print "cineworldscrape standalone"
-                        print "--help this info"
-                        print "--testcinema test cinema list"
-                        print "--testurls test grabbing main url list"
-                        print "--testscrape test one title"
-                        print "--scrape scrape all"
-                        print "--transform apply xsl to output"
+                        print "cineworldscrape [options...]"
+                        print "  --help        this info"
+                        print "  --testcinema  test cinema list"
+                        print "  --testurls    test grabbing main url list"
+                        print "  --testscrape  test one title"
+                        print "  --scrape      scrape all"
+                        print "  --transform   apply xsl to output"
                         sys.exit()
 
                 elif o in ("--testcinema"):
@@ -237,8 +239,7 @@ if __name__ == "__main__":
                         cinemalistings = doc.createElement("cinemalistings")
                         doc.appendChild(cinemalistings)
 
-                        url="http://www.cineworld.co.uk/cinemas/61?film=4099"
-                        filmdoc = c.downloadtidyparse(url)
+                        filmdoc = c.downloadparse(c.filmurls()[0])
                         film = c.scrapefilm(filmdoc)
                         cinemalistings.appendChild(film)
 
