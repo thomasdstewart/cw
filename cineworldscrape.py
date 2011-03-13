@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-#Copyright (C) 2009 Thomas Stewart <thomas@stewarts.org.uk>
+#Copyright (C) 2009-2011 Thomas Stewart <thomas@stewarts.org.uk>
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -23,9 +23,8 @@ import sys
 import tidy
 import time
 import urllib
-import xml.dom.ext.reader.Sax2
-import xml.xpath
-import xml.dom.ext
+import StringIO
+import lxml.etree
 import xml.dom.minidom
 import pprint
 pp = pprint.PrettyPrinter(depth=6)
@@ -34,37 +33,24 @@ class CineworldScrape:
         def __init__ (self, cinemaname = 'Stevenage'): 
                 self.cinemaid = self.cinema(cinemaname)
                 self.listingsurl = "http://www.cineworld.co.uk/cinemas/" \
-                        + str (self.cinemaid)
+                        + str(self.cinemaid)
 
         def downloadtidyparse (self, url):
-                raw = urllib.urlopen (url)
-                html = raw.read ()
-                raw.close ()
-
-                options = dict (
-                        add_xml_decl=1,
-                        output_xhtml=1,
-                        output_encoding="utf8",
-                        show_warnings=0,
-                        indent=0,
-                        bare=1,
-                        force_output=1
-                        )
-                html = str (tidy.parseString (html, **options))
-
-                reader = xml.dom.ext.reader.Sax2.Reader ()
-                return reader.fromString (html)
+                raw = urllib.urlopen(url)
+                html = raw.read()
+                raw.close()
+                html = StringIO.StringIO(html)
+                return lxml.etree.parse(html, lxml.etree.HTMLParser())
 
         def cinema (self, name):
                 url = 'http://www.cineworld.co.uk/cinemas'
-                doc = self.downloadtidyparse (url)
-                results = xml.xpath.Evaluate (
-                        '//select[@id="cinema"]/option', doc)
+                doc = self.downloadtidyparse(url)
+                results = doc.xpath('//select[@id="cinema"]/option')
 
                 cinemas = {}
                 for r in results:
-                        i = xml.xpath.Evaluate('@value', r)[0].nodeValue
-                        n = xml.xpath.Evaluate('text()', r)[0].nodeValue
+                        i = r.xpath('@value')[0]
+                        n = r.xpath('text()')[0]
                         if i > 0:
                                 cinemas[n] = i
 
@@ -74,154 +60,147 @@ class CineworldScrape:
                         return 0
 
         def filmurls (self):
-                doc = self.downloadtidyparse (self.listingsurl)
-                urls = xml.xpath.Evaluate ('//h3[@class="filmtitle"]/a/@href',
-                        doc)
+                doc = self.downloadtidyparse(self.listingsurl)
+                urls = doc.xpath('//h3[@class="filmtitle"]/a/@href')
                 base = "http://www.cineworld.co.uk"
-                urls = [ base + url.nodeValue for url in urls ] 
+                urls = [ base + url for url in urls ] 
                 return urls
 
-        def xpath (self, xp, doc, debug=0):
-                result = xml.xpath.Evaluate (xp, doc)
-                if(debug == 1):
-                        print 'hits: %s' % (len (result))
+        def xpath (self, doc, xpath, debug=0):
+                result = doc.xpath(xpath)
+                if debug == 1:
+                        print 'hits: %s' % (len(result))
                         for r in result:
-                                print 'hit: %s' % (r.nodeValue)
+                                print 'hit: %s' % (r)
 
-                if len (result) == 1:
-                        result = result[0].nodeValue.replace("\n", " ").strip()
+                if len(result) == 1:
+                        result = result[0].replace("\n", " ").strip()
                         return result
-                elif len (result) > 1:
+                elif len(result) > 1:
                         return "ERROR (more than one result)"
                 else:
                         return ""
 
         def scrapefilm (self, doc):
-                film = xml.dom.minidom.Document().createElement ("film")
+                film = xml.dom.minidom.Document().createElement("film")
 
-                img = self.xpath ('//li[@class="film-detail"]/img/@src', doc)
+                img = self.xpath(doc, '//li[@class="film-detail"]/img/@src')
                 img = "http://www.cineworld.co.uk" + img
-                film.setAttribute ("img", img)
+                film.setAttribute("img", img)
 
-                title = self.xpath ('//h3[@class="filmtitle"]/text()', doc)
-                title = title.title ()
+                title = self.xpath(doc, '//h3[@class="filmtitle"]/text()')
+                title = title.title()
                 title = title.replace("'S", "'s")
                 title = title.replace("'", "")
-                film.setAttribute ("title", title)
+                film.setAttribute("title", title)
 
-                cert = self.xpath ('//img[@class="cert-icon"]/@alt', doc)
-                film.setAttribute ("cert", cert)
+                cert = self.xpath(doc, '//img[@class="cert-icon"]/@alt')
+                film.setAttribute("cert", cert)
 
-                certdesc = self.xpath ('//img[@class="cert-icon"]/@title', doc)
-                film.setAttribute ("certdesc", certdesc)
+                certdesc = self.xpath(doc, '//img[@class="cert-icon"]/@title')
+                film.setAttribute("certdesc", certdesc)
 
-                certimg = self.xpath ('//img[@class="cert-icon"]/@src', doc)
+                certimg = self.xpath(doc, '//img[@class="cert-icon"]/@src')
                 certimg = "http://www.cineworld.co.uk" + certimg
-                film.setAttribute ("certimg", certimg)
+                film.setAttribute("certimg", certimg)
 
-                release = self.xpath ('//p[strong="Release Date:"]/text()', doc)
-                film.setAttribute ("release", release)
+                release = self.xpath(doc, '//p[strong="Release Date:"]/text()')
+                film.setAttribute("release", release)
 
-                runtime = self.xpath ('//p[strong="Running time:"]/text()', doc)
-                film.setAttribute ("runtime", runtime)
+                runtime = self.xpath(doc, '//p[strong="Running time:"]/text()')
+                film.setAttribute("runtime", runtime)
 
-                director = self.xpath ('//p[strong="Director:"]/text()',
-                        doc)
-                film.setAttribute ("director", director)
+                director = self.xpath(doc, '//p[strong="Director:"]/text()')
+                film.setAttribute("director", director)
 
-                staring = self.xpath ('//p[strong="Starring:"]/text()', doc)
-                film.setAttribute ("staring", staring)
+                staring = self.xpath(doc, '//p[strong="Starring:"]/text()')
+                film.setAttribute("staring", staring)
 
-                trailer = xml.xpath.Evaluate ('//div[@class="lead"]/script[@type="text/javascript"]/text()', doc)
-                if len(trailer) == 3:
-                        trailer = trailer[1].nodeValue
-                        trailer = trailer.replace("\n", " ").strip()
-                        trailer = re.sub('.*trailer: "http(.*)mp4".*',
-                                r'http\1mp4', trailer)
-                else:
-                        trailer=""   
-                film.setAttribute ("trailer", trailer)
+                trailer = self.xpath(doc, '//div[@class="lead"]/script[@type="text/javascript"]/text()')
+                trailer = trailer.replace("\n", " ").strip()
+                trailer = re.sub('.*trailer: "http(.*)mp4".*', r'http\1mp4', trailer)
+                film.setAttribute("trailer", trailer)
 
-                summary = self.xpath (
-                        '//div[@class="summary show-js"]/p[1]/text()', doc)
-                film.setAttribute ("summary", summary)
+                summary = self.xpath(doc, 
+                        '//div[@class="summary show-js"]/p[1]/text()')
+                film.setAttribute("summary", summary)
                 
-                synopsis = self.xpath (
-                        '//div[@class="synopsis hide-js"]/p[2]/text()', doc)
-                film.setAttribute ("synopsis", synopsis)
+                synopsis = self.xpath(doc,
+                        '//div[@class="synopsis hide-js"]/p[2]/text()')
+                film.setAttribute("synopsis", synopsis)
 
-                screenplay = self.xpath (
-                        '//p[strong="Screenplay:"]/text()', doc)
-                film.setAttribute ("screenplay", screenplay)
+                screenplay = self.xpath(doc,
+                        '//p[strong="Screenplay:"]/text()')
+                film.setAttribute("screenplay", screenplay)
                 
-                distributor = self.xpath (
-                        '//p[strong="Distributor:"]/text()', doc)
-                film.setAttribute ("distributor", distributor)
+                distributor = self.xpath(doc,
+                        '//p[strong="Distributor:"]/text()')
+                film.setAttribute("distributor", distributor)
 
-                seebecause = self.xpath (
-                        '//p[strong="You should see it because:"]/text()', doc)
-                film.setAttribute ("seebecause", seebecause)
+                seebecause = self.xpath(doc, 
+                        '//p[strong="You should see it because:"]/text()')
+                film.setAttribute("seebecause", seebecause)
 
-                seeifyouliked = self.xpath (
-                        '//p[strong="See it if you liked:"]/text()', doc)
-                film.setAttribute ("seeifyouliked", seeifyouliked)
+                seeifyouliked = self.xpath(doc, 
+                        '//p[strong="See it if you liked:"]/text()')
+                film.setAttribute("seeifyouliked", seeifyouliked)
 
                 showings = xml.dom.minidom.Document().createElement("showings")
-                film.appendChild (showings)
+                film.appendChild(showings)
                 day = ""
-                for r in xml.xpath.Evaluate ('//dl/dt/text()|//dl/dd/a', doc):
-                        if r.nodeType == xml.dom.Node.TEXT_NODE:
+                for r in doc.xpath('//dl/dt/text()|//dl/dd/a'):
+                        if not lxml.etree.iselement(r):
                                 y = str(datetime.datetime.now().year)
-                                d = r.nodeValue
-                                d = datetime.datetime (*(time.strptime \
+                                d = r
+                                d = datetime.datetime(*(time.strptime \
                                         (y + " " + d, "%Y %a %d %b")[0:6]))
                                 day = str(d.year) + "-" + str(d.month) \
                                         + "-" + str(d.day)
 
-                        if r.nodeType == xml.dom.Node.ELEMENT_NODE:
+                        if lxml.etree.iselement(r):
                                 showing = xml.dom.minidom.Document(). \
-                                        createElement ("showing")
+                                        createElement("showing")
 
-                                url = self.xpath ('@href', r)
+                                url = self.xpath(r, '@href')
                                 url = "http://www.cineworld.co.uk" + url
-                                showing.setAttribute ("url", url)
-
-                                showingtime = self.xpath ('text()', r)
+                                showing.setAttribute("url", url)
+                                
+                                showingtime = r.xpath('text()')
+                                showingtime = showingtime[0].replace("\n", " ").strip()
                                 showingtime = day + " " + showingtime[0:5]
-                                showingtime = datetime.datetime (*( \
-                                        time.strptime (showingtime, \
+                                showingtime = datetime.datetime(*( \
+                                        time.strptime(showingtime, \
                                         "%Y-%m-%d %H:%M")[0:6]))
                                 showingtime = showingtime.isoformat(' ')
 
-                                showing.setAttribute ("time", showingtime)
-                                showings.appendChild (showing)
+                                showing.setAttribute("time", showingtime)
+                                showings.appendChild(showing)
 
                 return film
                
         def scrape (self):
-
-                doc = xml.dom.minidom.Document ()
+                doc = xml.dom.minidom.Document()
                 #doctype = xml.dom.minidom.DocumentType('cw.dtd')
                 #doc.appendChild (doctype)
                 #my $xml_i = $xml->createProcessingInstruction ("xml-stylesheet", 'type="text/xsl" href="cw.xsl"');
 
-                cinemalistings = doc.createElement ("cinemalistings")
-                cinemalistings.setAttribute ("chain", "Cineworld")
-                cinemalistings.setAttribute ("location", "Stevenage")
-                cinemalistings.setAttribute ("url", self.listingsurl)
-                doc.appendChild (cinemalistings)
+                cinemalistings = doc.createElement("cinemalistings")
+                cinemalistings.setAttribute("chain", "Cineworld")
+                cinemalistings.setAttribute("location", "Stevenage")
+                cinemalistings.setAttribute("url", self.listingsurl)
+                doc.appendChild(cinemalistings)
 
-                urls = self.filmurls ()
+                urls = self.filmurls()
                 for url in urls:
-                        filmdoc = self.downloadtidyparse (url)
-                        film = self.scrapefilm (filmdoc)
-                        film.setAttribute ("url", url)
-                        cinemalistings.appendChild (film)
+                        filmdoc = self.downloadtidyparse(url)
+                        film = self.scrapefilm(filmdoc)
+                        film.setAttribute("url", url)
+                        cinemalistings.appendChild(film)
                 
                 return doc
 
 if __name__ == "__main__":
-        c=CineworldScrape ()
+        c=CineworldScrape()
 
         scrape=0
         transform=0
@@ -254,17 +233,17 @@ if __name__ == "__main__":
                         sys.exit()
 
                 elif o in ("--testscrape"):
-                        doc = xml.dom.minidom.Document ()
-                        cinemalistings = doc.createElement ("cinemalistings")
-                        doc.appendChild (cinemalistings)
+                        doc = xml.dom.minidom.Document()
+                        cinemalistings = doc.createElement("cinemalistings")
+                        doc.appendChild(cinemalistings)
 
-                        url="http://www.cineworld.co.uk/cinemas/61?film=3388"
-                        filmdoc = c.downloadtidyparse (url)
-                        film = c.scrapefilm (filmdoc)
-                        cinemalistings.appendChild (film)
+                        url="http://www.cineworld.co.uk/cinemas/61?film=4099"
+                        filmdoc = c.downloadtidyparse(url)
+                        film = c.scrapefilm(filmdoc)
+                        cinemalistings.appendChild(film)
 
-                        print doc.toprettyxml (indent="  ")
-                        sys.exit ()
+                        print doc.toprettyxml()
+                        sys.exit()
 
                 elif o in ("--scrape"):
                         scrape=1
@@ -273,16 +252,17 @@ if __name__ == "__main__":
                         transform=1
 
         if scrape:
-                doc = c.scrape ()
-                xml.dom.ext.PrettyPrint (doc,
-                        open ("/home/thomas/www/cw/cw.xml", "w"))
+                doc = c.scrape()
+                xmlfile = open("/home/thomas/www/cw/cw.xml", "w")
+                xmlfile.write(doc.toprettyxml())
+                xmlfile.close()
 
         if transform:
                 styledoc = libxml2.parseFile(
                         "/home/thomas/www/cw/cw.xsl")
-                style = libxslt.parseStylesheetDoc (styledoc)
-                doc = libxml2.parseFile ("/home/thomas/www/cw/cw.xml")
-                result = style.applyStylesheet (doc, None)
+                style = libxslt.parseStylesheetDoc(styledoc)
+                doc = libxml2.parseFile("/home/thomas/www/cw/cw.xml")
+                result = style.applyStylesheet(doc, None)
                 style.saveResultToFilename(
                         "/home/thomas/www/cw/cw.html", result, 0)
 
