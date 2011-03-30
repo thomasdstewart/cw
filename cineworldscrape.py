@@ -37,7 +37,7 @@ class CineworldScrape:
 
         def downloadparse (self, url):
                 raw = urllib.urlopen(url)
-                html = raw.read()
+                html = raw.read().decode('windows-1252')
                 raw.close()
                 html = StringIO.StringIO(html)
                 return lxml.etree.parse(html, lxml.etree.HTMLParser())
@@ -194,6 +194,7 @@ class CineworldScrape:
 
                 urls = self.filmurls()
                 for url in urls:
+                        #url='http://www.cineworld.co.uk/cinemas/61?film=4145'
                         filmdoc = self.downloadparse(url)
                         film = self.scrapefilm(filmdoc)
                         film.setAttribute("url", url)
@@ -251,7 +252,7 @@ if __name__ == "__main__":
         if scrape:
                 doc = c.scrape()
                 xmlfile = open(base + "cw.xml", "w")
-                xmlfile.write(doc.toprettyxml())
+                xmlfile.write(doc.toprettyxml(encoding="utf8"))
                 xmlfile.close()
 
         if transform:
