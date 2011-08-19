@@ -84,7 +84,8 @@ class CineworldScrape:
         def scrapefilm (self, doc):
                 film = xml.dom.minidom.Document().createElement("film")
 
-                img = self.xpath(doc, '//li[@class="film-detail"]/img/@src')
+                img = self.xpath(doc,
+                        '//div[@class="poster floatLeft"]/img/@src')
                 img = "http://www.cineworld.co.uk" + img
                 film.setAttribute("img", img)
 
@@ -116,10 +117,10 @@ class CineworldScrape:
                 staring = self.xpath(doc, '//p[strong="Starring:"]/text()')
                 film.setAttribute("staring", staring)
 
-                trailer = self.xpath(doc, '//div[@class="lead"]/'
+                trailer = self.xpath(doc, '//div[@class="clear"]/'
                         + 'script[@type="text/javascript"]/text()')
                 trailer = trailer.replace("\n", " ").strip()
-                trailer = re.sub('.*trailer: "http(.*)mp4".*',
+                trailer = re.sub('.*http(.*)mp4.*',
                         r'http\1mp4', trailer)
                 film.setAttribute("trailer", trailer)
 
@@ -128,7 +129,7 @@ class CineworldScrape:
                 film.setAttribute("summary", summary)
                 
                 synopsis = self.xpath(doc,
-                        '//div[@class="synopsis hide-js"]/p[2]/text()')
+                        '//div[@class="synopsis hide-js"]/p[3]/text()')
                 film.setAttribute("synopsis", synopsis)
 
                 screenplay = self.xpath(doc, '//p[strong="Screenplay:"]/text()')
