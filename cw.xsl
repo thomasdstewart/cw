@@ -171,16 +171,17 @@ function toggleid(id) {
 </script>
 </head>
 <body>
-show today
-<a href="javascript:today();">now till end of play</a>
+<a href="javascript:today();">show now till end of play</a>
 <!-- or
 <a href="javascript:eve();">evening showings (18:45 to 22:45)</a> -->
+<!--
 or
 <a href="javascript:soon();">showings starting soon (now to +1 hour)</a><br/>
 <a href="javascript:hideseen();">hide</a>
 or
 <a href="javascript:resetseen();">reset</a>
 <a href="javascript:seenmsg();">seen</a>
+-->
 <br/>
 <br/>
 <table>
@@ -207,6 +208,8 @@ or
                         <b><xsl:value-of select="../../@summary"/></b>
                         Staring:
                         <b><xsl:value-of select="../../@staring"/></b>
+                        Screen Type:
+                        <b><xsl:value-of select="@screentype"/></b>
                         <div id="{../../@title}-extra" style="display: none">
                                 Runtime:
                                 <b>
@@ -219,14 +222,6 @@ or
                                 Director:
                                 <b>
                                 <xsl:value-of select="../../@director"/>
-                                </b>
-                                Distributor:
-                                <b>
-                                <xsl:value-of select="../../@distributor"/>
-                                </b>
-                                Screen Play:
-                                <b>
-                                <xsl:value-of select="../../@screenplay"/>
                                 </b>
                                 See because:
                                 <b>
@@ -247,10 +242,10 @@ or
                         or
                         <a href="javascript:hideafter('{$stime}');">after</a>
                         this showing.
-                        <br/>
                         <a href="javascript:hidetitle('{../../@title}');">Hide</a>
-                        this title, hide and mark this title
+                        this title<!--, hide and mark this title
                         <a href="javascript:markseen('{../../@title}');">seen</a>
+                        -->
                         or
                         <a href="javascript:showtitle('{../../@title}');">only</a>
                         show this title.
@@ -259,7 +254,9 @@ or
                         <br/>
                 </td>
                 <td style="vertical-align: top">
-                        <img src="{../../@img}"/>
+                        <a href="{../../@trailer}">
+                                <img src="{../../@img}" width="75%"/>
+                        </a>
                 </td>
         </tr>
         <!-- </xsl:if> -->
