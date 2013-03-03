@@ -118,6 +118,7 @@ class CineworldScrape:
                         + '/@content')
                 trailer = urllib.unquote(trailer)
                 trailer = re.sub('.*http(.*)mp4.*', r'http\1mp4', trailer)
+                trailer = trailer.replace('+', ' ')
                 film.setAttribute("trailer", trailer)
 
                 summary = self.xpath(doc, '//meta[@property="og:description"]'
