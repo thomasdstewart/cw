@@ -15,8 +15,6 @@
 
 import datetime
 import getopt
-import libxml2
-import libxslt
 import re
 import sys
 import time
@@ -36,7 +34,8 @@ class CineworldScrape:
 
         def downloadparse (self, url):
                 raw = urllib.urlopen(url)
-                html = raw.read().decode('windows-1252')
+                #html = raw.read().decode('windows-1252')
+                html = raw.read().decode('utf-8')
                 raw.close()
                 html = StringIO.StringIO(html)
                 return lxml.etree.parse(html, lxml.etree.HTMLParser())
@@ -273,14 +272,14 @@ if __name__ == "__main__":
         base='/srv/www/stewarts.org.uk/cw/'
         if scrape:
                 doc = c.scrape()
-                xmlfile = open(base + "cw.xml", "w")
+                xmlfile = open(base + 'cw.xml', 'w')
                 xmlfile.write(doc.toprettyxml(encoding="utf8"))
                 xmlfile.close()
 
         if transform:
-                styledoc = libxml2.parseFile(base + "cw.xsl")
-                style = libxslt.parseStylesheetDoc(styledoc)
-                doc = libxml2.parseFile(base + "cw.xml")
-                result = style.applyStylesheet(doc, None)
-                style.saveResultToFilename(base + "cw.html", result, 0)
-
+                xslt = lxml.etree.XML(open(base + 'cw.xsl').read())
+                transform = lxml.etree.XSLT(xslt)
+                doc = lxml.etree.parse(open(base + 'cw.xml'))
+                result = transform(doc)
+                output = open(base + 'cw.html', 'w')
+                output.write(str(result))
