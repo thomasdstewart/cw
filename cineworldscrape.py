@@ -270,7 +270,7 @@ if __name__ == "__main__":
                 elif o in ("-t", "--transform"):
                         transform=1
 
-        base='/home/thomas/www/cw/'
+        base='/srv/www/stewarts.org.uk/cw/'
         if scrape:
                 doc = c.scrape()
                 xmlfile = open(base + "cw.xml", "w")
