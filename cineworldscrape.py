@@ -16,7 +16,7 @@
 import getopt
 import urllib.request, urllib.parse
 import lxml.etree
-import getoptm, sys, io, re, time, datetime
+import getopt, sys, io, re, time, datetime
 from pprint import pprint as pp
 
 class CineworldScrape:
@@ -255,7 +255,8 @@ if __name__ == "__main__":
 
                 elif o in ("--testscrape"):
                         doc = c.scrape(debug=1)
-                        print(lxml.etree.tostring(doc, pretty_print=True))
+                        print(lxml.etree.tostring(doc, pretty_print=True,
+                                encoding='unicode'))
                         sys.exit()
 
                 elif o in ("-s", "--scrape"):
