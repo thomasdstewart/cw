@@ -132,7 +132,8 @@ class CineworldScrape:
                 genre = self.xpath(doc, '//div[@class="span7"]/p[6]/text()')
                 film.setAttribute("genre", genre)
 
-                screentype = doc.xpath('//div[@class="span7"]/ul/li/@class')
+                screentype = doc.xpath('//div/div/ul[@class="unstyled"]/li/@class')
+                st = ''
                 if 'icon-service-twod' in screentype \
                                 and 'icon-service-thrd' not in screentype:
                         st = '2D'
