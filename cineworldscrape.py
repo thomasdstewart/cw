@@ -1,5 +1,5 @@
-#!/usr/bin/env python
-#Copyright (C) 2009-2013 Thomas Stewart <thomas@stewarts.org.uk>
+#!/usr/bin/env python3
+#Copyright (C) 2009-2014 Thomas Stewart <thomas@stewarts.org.uk>
 #This program is free software: you can redistribute it and/or modify
 #it under the terms of the GNU General Public License as published by
 #the Free Software Foundation, either version 3 of the License, or
@@ -18,12 +18,12 @@ import getopt
 import re
 import sys
 import time
-import urllib
-import StringIO
+import urllib.request
+import urllib.parse
+import io
 import lxml.etree
 import xml.dom.minidom
-import pprint
-pp = pprint.PrettyPrinter(depth=6)
+from pprint import pprint as pp
 
 class CineworldScrape:
         def __init__ (self, cinemaname = 'Stevenage'): 
@@ -33,11 +33,11 @@ class CineworldScrape:
                         + "?cinema=" + str(self.cinemaid)
 
         def downloadparse (self, url):
-                raw = urllib.urlopen(url)
+                raw = urllib.request.urlopen(url)
                 #html = raw.read().decode('windows-1252')
                 html = raw.read().decode('utf-8')
                 raw.close()
-                html = StringIO.StringIO(html)
+                html = io.StringIO(html)
                 return lxml.etree.parse(html, lxml.etree.HTMLParser())
 
         def cinema (self, name):
@@ -47,10 +47,13 @@ class CineworldScrape:
 
                 cinemas = {}
                 for r in results:
-                        i = r.xpath('@value')[0]
                         n = r.xpath('text()')[0]
-                        if i > 0:
-                                cinemas[n] = i
+                        try:
+                                i = int(r.xpath('@value')[0])
+                                if i > 0:
+                                        cinemas[n] = i
+                        except ValueError:
+                                continue
 
                 if name in cinemas:
                         return cinemas[name]
@@ -66,9 +69,9 @@ class CineworldScrape:
         def xpath (self, doc, xpath, debug=0):
                 result = doc.xpath(xpath)
                 if debug:
-                        print 'hits: %s' % (len(result))
+                        print('hits: %s' % (len(result)))
                         for r in result:
-                                print 'hit: %s' % (r)
+                                print('hit: %s' % (r))
 
                 if len(result) == 1:
                         result = result[0].replace("\n", " ").strip()
@@ -115,7 +118,7 @@ class CineworldScrape:
 
                 trailer = self.xpath(doc, '//meta[@property="og:video"]'
                         + '/@content')
-                trailer = urllib.unquote(trailer)
+                trailer = urllib.parse.unquote(trailer)
                 trailer = re.sub('.*http(.*)mp4.*', r'http\1mp4', trailer)
                 trailer = trailer.replace('+', ' ')
                 film.setAttribute("trailer", trailer)
@@ -215,7 +218,7 @@ class CineworldScrape:
                 urls = self.filmurls()
                 for url in urls:
                         filmdoc = self.downloadparse(url)
-                        #print lxml.etree.tostring(filmdoc)
+                        #print(lxml.etree.tostring(filmdoc))
                         #sys.exit()
                         film = self.scrapefilm(filmdoc)
                         film.setAttribute("url", url)
@@ -235,32 +238,32 @@ if __name__ == "__main__":
                 opts, args = getopt.getopt(sys.argv[1:], "hst",
                         ["help", "testcinema", "testurls", "testscrape",
                         "scrape", "transform"])
-        except getopt.error, msg:
-                print str(msg)
+        except(getopt.error, msg):
+                print(str(msg))
                 sys.exit(2)
 
         for o, a in opts:
                 if o in ("-h", "--help"):
-                        print "cineworldscrape [options...]"
-                        print "  -h --help        this info"
-                        print "     --testcinema  test cinema list"
-                        print "     --testurls    test grabbing main url list"
-                        print "     --testscrape  test one title"
-                        print "  -s --scrape      scrape all"
-                        print "  -t --transform   apply xsl to output"
+                        print("cineworldscrape [options...]")
+                        print("  -h --help        this info")
+                        print("     --testcinema  test cinema list")
+                        print("     --testurls    test grabbing main url list")
+                        print("     --testscrape  test one title")
+                        print("  -s --scrape      scrape all")
+                        print("  -t --transform   apply xsl to output")
                         sys.exit()
 
                 elif o in ("--testcinema"):
-                        pp.pprint(c.cinemaid)
+                        pp(c.cinemaid)
                         sys.exit()
 
                 elif o in ("--testurls"):
-                        pp.pprint(c.filmurls())
+                        pp(c.filmurls())
                         sys.exit()
 
                 elif o in ("--testscrape"):
                         doc = c.scrape(debug=1)
-                        print doc.toprettyxml()
+                        print(doc.toprettyxml())
                         sys.exit()
 
                 elif o in ("-s", "--scrape"):
@@ -273,13 +276,14 @@ if __name__ == "__main__":
         if scrape:
                 doc = c.scrape()
                 xmlfile = open(base + 'cw.xml', 'w')
-                xmlfile.write(doc.toprettyxml(encoding="utf8"))
+                xmlfile.write(doc.toprettyxml())
                 xmlfile.close()
 
         if transform:
                 xslt = lxml.etree.XML(open(base + 'cw.xsl').read())
-                transform = lxml.etree.XSLT(xslt)
-                doc = lxml.etree.parse(open(base + 'cw.xml'))
-                result = transform(doc)
-                output = open(base + 'cw.html', 'w')
-                output.write(str(result))
+                #transform = lxml.etree.XSLT(xslt)
+                #doc = lxml.etree.parse(open(base + 'cw.xml'))
+                #result = transform(doc)
+                #output = open(base + 'cw.html', 'w')
+                #output.write(str(result))
+
